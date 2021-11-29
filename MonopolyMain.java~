@@ -1,0 +1,893 @@
+import java.util.Scanner;
+public class MonopolyMain
+{
+  public static void main (String[]args)
+  {
+    Scanner input = new Scanner(System.in);
+    Displayer disp = new Displayer();
+    MonoDeal deal = new MonoDeal();
+    char player; 
+    int action ;
+    
+    int turnA=0;
+    int turnB=0;
+    int allowableAction=0;
+    int discard=0;
+    int allColour=0;
+    
+    char numberOfAction='Y';
+    char bankrupt='S';
+    
+    
+    
+    do
+    {
+      disp.DisplayMainMenu();
+      player = input.next().toUpperCase().charAt(0);
+      
+      
+      if (player == PlayerA.PLAYER_A ||player==PlayerB.PLAYER_B)
+      {
+        if (player ==PlayerA.PLAYER_A)
+        {
+          deal.SetCurrPlayer(player);
+        }
+        else if(player==PlayerB.PLAYER_B)
+        {
+          deal.SetCurrPlayer(player);
+        }
+        while(true)
+        {
+          
+          if(deal.GetCurrPlayer()==PlayerA.PLAYER_A)
+          {
+            
+            
+            
+            turnA++;
+            if(turnA==1)
+            {
+              System.out.println("PLAYER A : Draw 5 Cards (enter) to continue");
+            }
+            else
+            {
+              System.out.println("PLAYER A  : Draw 3 Cards (enter) to continue");
+            }
+            try{
+              System.in.read();
+            }
+            catch(Exception e){
+            }
+            
+            deal.AddPlayerCardA(turnA);
+            System.out.println("PLAYER A CARDS");
+            disp.DisplayPlayerCardsA(deal.GetPlayerCardA());
+            
+            while(deal.DiscardPlayerACard()!=false)
+            {
+              
+              System.out.print("\n A Player can have no more than seven cards.Choose Cards to discard :");
+              discard= input.nextInt();
+              deal.DeleteCard(discard-1);
+              if (deal.DiscardPlayerACard()==false)
+              {
+                System.out.println("Successfully discard card");
+                disp.DisplayPlayerCardsA(deal.GetPlayerCardA());
+                
+              }
+            }
+            
+            
+            System.out.println("\nChoose action to enhance your property.Minimum action to choose is 3");
+            while(numberOfAction =='Y')
+            {
+              System.out.print("Click (Y) to choose action and (N) to continue  :");
+              numberOfAction= input.next().toUpperCase().charAt(0);;
+              if(numberOfAction=='Y')
+              {
+                System.out.print("Pick card numbers:");
+                action = input.nextInt();
+                
+                if(deal.Money (action-1)==true)
+                {
+                  deal.DeleteCard(action-1);
+                  allowableAction++;
+                }
+               
+                
+                else if (deal.Rent(action-1)==MonoDeal.RENT_SUCCESS)
+                {
+                  
+                  System.out.println("Successfully paid rent");
+                  deal.DeleteCard(action-1);
+                  allowableAction++;
+                  
+                }
+                else if (deal.Rent(action-1)==MonoDeal.RENT_FIELD_EMPTY)
+                {
+                  System.out.println("Field is empty card can not be rented");
+                  
+                  
+                }
+                  else if (deal.Rent(action-1)==MonoDeal.RENT_NOT_ENOUGH_BALANCE)
+                {
+                 
+                  while (bankrupt!='B'||bankrupt!='X')
+                  {
+                    System.out.println("Player B (not enough balance):Go bankrupt(B)or choose property to sell(S)");
+                    bankrupt=input.next().toUpperCase().charAt(0);
+                    if (bankrupt == 'B')
+                    {
+                      System.out.println("PlayerB Bankrupt : Player A wins");
+                      bankrupt='B';
+                      
+                      break;
+                    }
+                    
+                    else if (deal.Bankrupt()==true)
+                    {
+                      System.out.print("There is no property to sell.Player A wins");
+                
+                      bankrupt='B';
+                      break;
+                    }
+                    
+                    else if (bankrupt=='S')
+                    {
+                      while (true)
+                      {
+                        
+                      
+                        disp.DisplayPropertyB(deal.GetPropertyCardB());
+                        System.out.println("Choose Property to sell (choose your coordinate ) (x,y):");
+                        int col= input.nextInt();
+                        int row=input.nextInt();
+                          System.out.print(deal.SoldPropertyRentC((col-1),(row-1),(action-1)));
+                       
+                        if (deal.SoldPropertyRentA((col-1),(row-1),(action-1))==true)
+                        {
+                          allowableAction++;
+                          System.out.println("Successfully sold property");
+                          deal.DeleteCard(action-1);
+                          break;
+                          
+                        }
+                        else if ( deal.SoldPropertyRentA((col-1),(row-1),(action-1))==false)
+                        {
+                         if (deal.Bankrupt()==true)
+                        {
+                          System.out.print("There is no property to sell.Player A wins");
+                          bankrupt='B';
+                          break;
+                        }
+                         else
+                         {
+                          System.out.println("not enough balance.Pick More property to sold");
+                         }
+                        }
+                        
+                        
+                        
+                        
+                      }
+                      
+                      
+                      bankrupt ='X';
+                      break;
+                      
+                      
+                      
+                    }
+                    
+                  }
+                  if (bankrupt=='B')
+                  {
+                    break;
+                  }
+                  
+                }
+                else if (deal.Rent(action-1 )==MonoDeal.RENT_ALL_COLOUR)
+                {
+                 
+                    System.out.println("\nPlayer A Property :");
+                    disp.DisplayPropertyA(deal.GetPropertyCardA());
+                    System.out.println("Pick property to rent : ");
+                    allColour=input.nextInt();
+                    if (deal.RentAllColour(allColour-1)==MonoDeal.RENT_SUCCESS)
+                    {
+                      allowableAction++;
+                      System.out.println("Successfully paid rent");
+                       disp.DisplayPlayerCardsA(deal.GetPlayerCardA());
+                       deal.DeleteCard(action-1);
+                    
+                    
+                    }
+                     
+                    else if (deal.RentAllColour(allColour-1)==MonoDeal.RENT_FIELD_EMPTY)
+                    {
+                      
+                      System.out.println("Field is empty card can not be rented.Choose Again");
+                      System.out.println("PLAYER A CARDS");
+                      disp.DisplayPlayerCardsA(deal.GetPlayerCardA());
+                    
+       
+                      
+                    }
+                    else if (deal.RentAllColour(allColour-1)==MonoDeal.RENT_NOT_ENOUGH_BALANCE)
+                    {
+                      
+                      while (bankrupt!='B'||bankrupt!='X')
+                      {
+                        System.out.println("Player B (not enough balance):Go bankrupt(B)or choose property to sell(S)");
+                        bankrupt=input.next().toUpperCase().charAt(0);
+                        if (bankrupt == 'B')
+                        {
+                          System.out.println("PlayerB Bankrupt : Player A wins");
+                          bankrupt='B';
+                          
+                          break;
+                        }
+                         else if (deal.Bankrupt()==true)
+                        {
+                          System.out.print("There is no property to sell.Player A wins");
+                          bankrupt='B';
+                          break;
+                        }
+                        
+                        
+                        else if (bankrupt=='S')
+                        {
+                          while (true)
+                          {
+                            
+                            
+                            disp.DisplayPropertyB(deal.GetPropertyCardB());
+                            System.out.println("Choose Property to sell (choose your coordinate (x,y)) :");
+                            int col= input.nextInt();
+                            int row=input.nextInt();
+                            
+                        
+                            if (deal.SoldAllColourProperty((col-1),(row-1),(allColour-1))==true)
+                            {
+                              System.out.println("Successfully sold property");
+                              deal.DeleteCard(action-1);
+                              bankrupt='B';
+           
+                              allowableAction++;
+                              
+                              break;
+                              
+                            }
+                            else if ( deal.SoldAllColourProperty((col-1),(row-1),(allColour-1))==false)
+                            {
+                              System.out.println("not enough balance.Pick More property to sold");
+                              
+                            }
+                            if (deal.Bankrupt()==true)
+                              {
+                                System.out.print("There is no property to sell.Player A wins");
+                                bankrupt='B';
+                                break;
+                              }
+                            
+                            
+                            
+                            
+                          }
+                          
+                          
+                          bankrupt ='X';
+                          break;
+                          
+                            
+                          
+                          
+                        }
+                        
+                        
+                      }
+                      if (bankrupt=='B')
+                      {
+                        break;
+                      }
+                    
+                    
+                  }
+                  
+                }
+                 else if (deal.Rent(action-1 )==MonoDeal.RENT_DOUBLE_RENT)
+                {
+                   
+                   System.out.println("\nPlayer A Property :");
+                    disp.DisplayPropertyA(deal.GetPropertyCardA());
+                    System.out.println("Pick property to rent : ");
+                    allColour=input.nextInt();
+                   if (deal.DoubleRent(allColour-1)==MonoDeal.RENT_SUCCESS)
+                    {
+                      allowableAction++;
+                      System.out.println("Successfully paid rent");
+                       deal.DeleteCard(action-1);
+                    
+               
+                    }
+                     
+                    else if (deal.DoubleRent(allColour-1)==MonoDeal.RENT_FIELD_EMPTY)
+                    {
+                      
+                      System.out.println("Field is empty card can not be rented.Choose Again");
+                      System.out.println("PLAYER A CARDS");
+                    
+                       disp.DisplayPlayerCardsA(deal.GetPlayerCardA());
+                      
+                    }
+                    else if (deal.DoubleRent(allColour-1)==MonoDeal.RENT_NOT_ENOUGH_BALANCE)
+                    {
+                      
+                      while (bankrupt!='B'||bankrupt!='X')
+                      {
+                        System.out.println("Player B (not enough balance):Go bankrupt(B)or choose property to sell(S)");
+                        bankrupt=input.next().toUpperCase().charAt(0);
+                        if (bankrupt == 'B')
+                        {
+                          System.out.println("PlayerB Bankrupt : Player A wins");
+                          bankrupt='B';
+                          
+                          break;
+                        }
+                        else if (deal.Bankrupt()==true)
+                        {
+                          System.out.print("There is no property to sell.Player A wins");
+                          bankrupt='B';
+                          break;
+                        }
+                        
+                        else if (bankrupt=='S')
+                        {
+                          while (true)
+                          {
+                            
+                            
+                            disp.DisplayPropertyB(deal.GetPropertyCardB());
+                            System.out.println("Choose Property to sell (choose your coordinate (x,y)) :");
+                            int col= input.nextInt();
+                            int row=input.nextInt();
+                             //System.out.println(deal.DoubleRentProperty((col-1),(row-1),(allColour-1)));
+                        
+                            if (deal.DoubleRentProperty((col-1),(row-1),(allColour-1))==true)
+                            {
+                              System.out.println("Successfully sold property");
+                              deal.DeleteCard(action-1);
+                              bankrupt='B';
+                              
+                              allowableAction++;
+                              
+                              break;
+                              
+                            }
+                            else if ( deal.DoubleRentProperty((col-1),(row-1),(allColour-1))==false)
+                            {
+                              
+                              
+                                System.out.println("not enough balance.Pick More property to sold");
+                              
+                              
+                              
+                            }
+                            if(deal.Bankrupt()==true)
+                            {
+                              
+                              System.out.print("There is no property to sell.Player A wins");
+                              
+                              bankrupt='B';
+                              break;
+                            }
+                           
+                            
+                          }
+                          bankrupt ='X';
+                          break;
+                        }
+                        
+                      }
+                      if (bankrupt=='B')
+                      {
+                        break;
+                      }
+                    
+                    
+                  }
+                   
+                   
+                 }
+                else if (deal.AddPropertyA(action-1)==true)
+                {
+                  deal.DeleteCard(action-1);
+                  allowableAction++;
+                }
+                else if (deal.AddPropertyA(action-1)==false)
+                {
+                  System.out.println("Wildcard has no base//(special card has not been specified).Choose Again");
+                  numberOfAction='Y';
+                }
+                
+                
+              }
+              
+              else if (numberOfAction=='N')
+              {
+                numberOfAction='N';
+              }
+              
+              else if (numberOfAction != 'N' || numberOfAction != 'Y')
+              {
+                System.out.println("Wrong input.Try Again!");
+                numberOfAction='Y';
+              }
+              
+              if (allowableAction ==3)
+              {
+                numberOfAction='N';
+              }
+              
+              
+            }
+            allowableAction=0;
+            numberOfAction='Y';
+            
+            if (bankrupt=='B')
+            {
+              break;
+            }
+            System.out.println("\nPlayer A Property :");
+            disp.DisplayPropertyA(deal.GetPropertyCardA());
+            
+            System.out.println("\nSEE AN UPDATE ON BALANCE (Enter) to continue :");
+            
+            
+            disp.DisplayMoney();
+            System.out.println(deal.PlayerABank());
+            try{
+              System.in.read();
+            }
+            catch(Exception e){
+            }
+            
+            deal.SwitchPlayer();
+            
+            
+            
+            //set player
+            //from monodeal class
+            
+          }
+          else if (deal.GetCurrPlayer()==PlayerB.PLAYER_B)
+          {
+            
+            
+            turnB++;
+            if(turnB==1)
+            {
+              System.out.println("PLAYER B :Draw 5 Cards (enter) to continue");
+            }
+            else
+            {
+              System.out.println("PLAYER B :Draw 3 Cards (enter) to continue");
+            }
+            try
+            {
+              System.in.read();
+            }
+            catch(Exception e){
+            }
+            deal.AddPlayerCardB(turnB);
+            System.out.println("Player B cards");
+            
+            disp.DisplayPlayerCardsB(deal.GetPlayerCardB());
+            while(deal.DiscardPlayerBCard()!=false)
+            {
+              
+              System.out.print("\n A Player can have no more than seven cards.Choose Cards to discard :");
+              discard= input.nextInt();
+              deal.DeleteCard(discard-1);
+              
+              if (deal.DiscardPlayerBCard()==false)
+              {
+                System.out.println("Successfully discard card");
+                disp.DisplayPlayerCardsB(deal.GetPlayerCardB());
+              }
+              
+            }
+            
+            System.out.println("\nChoose action to enhance your property.Minimum action to choose is 3");
+            while(numberOfAction =='Y')
+            {
+              System.out.print("Click (Y) to choose action and (N) to continue  :");
+              numberOfAction= input.next().toUpperCase().charAt(0);;
+              if(numberOfAction=='Y')
+              {
+                System.out.print("Pick card numbers:");
+                action = input.nextInt();
+                 if (deal.Rent(action-1)==MonoDeal.RENT_NOT_AVAILLABLE)
+                {
+                  System.out.println("Card is not availlable");
+                }
+                else if(deal.Money (action-1)==true)
+                {
+                  deal.DeleteCard(action-1);
+                  allowableAction++;
+                }
+                else if (deal.Rent(action-1)==MonoDeal.RENT_SUCCESS)
+                {
+                  
+                  System.out.println("Successfully paid rent");
+                  deal.DeleteCard(action-1);
+                  allowableAction++;
+                  
+                }
+                else if (deal.Rent(action-1)==MonoDeal.RENT_FIELD_EMPTY)
+                {
+                  System.out.println("Field is empty card can not be rented");
+                  
+                }
+                else if (deal.Rent(action-1)==MonoDeal.RENT_NOT_ENOUGH_BALANCE)
+                {
+                 
+                  while (bankrupt!='B'||bankrupt!='X')
+                  {
+                    System.out.println("Player A (not enough balance):Go bankrupt(B)or choose property to sell(S)");
+                    bankrupt=input.next().toUpperCase().charAt(0);
+                    if (bankrupt == 'B')
+                    {
+                      System.out.println("PlayerA Bankrupt : Player B wins");
+                      bankrupt='B';
+                      
+                      break;
+                    }
+                    
+                    else if (deal.Bankrupt()==true)
+                    {
+                      System.out.print("There is no property to sell.Player A wins");
+                
+                      bankrupt='B';
+                      break;
+                    }
+                    
+                    else if (bankrupt=='S')
+                    {
+                      while (true)
+                      {
+                        
+                        
+                        disp.DisplayPropertyA(deal.GetPropertyCardA());
+                        System.out.println("Choose Property to sell (choose your coordinate ) (x,y):");
+                        int col= input.nextInt();
+                        int row=input.nextInt();
+                        
+                      // System.out.println(deal.SoldPropertyRentD((col-1),(row-1),(action-1)));
+                        if (deal.SoldPropertyRentB((col-1),(row-1),(action-1))==true)
+                        {
+                          allowableAction++;
+                          System.out.println("Successfully sold property");
+                          deal.DeleteCard(action-1);
+                          break;
+                          
+                        }
+                        else if ( 
+                                 deal.SoldPropertyRentB((col-1),(row-1),(action-1))==false)
+                        {
+                         if (deal.Bankrupt()==true)
+                        {
+                          System.out.print("There is no property to sell.Player A wins");
+                          bankrupt='B';
+                          break;
+                        }
+                         else
+                         {
+                          System.out.println("not enough balance.Pick More property to sold");
+                         }
+                        }
+                        
+                        
+                        
+                        
+                      }
+                      
+                      
+                      bankrupt ='X';
+                      break;
+                      
+                      
+                      
+                    }
+                    
+                  }
+                  if (bankrupt=='B')
+                  {
+                    break;
+                  }
+                  
+                }
+                else if (deal.Rent(action-1 )==MonoDeal.RENT_ALL_COLOUR)
+                {
+                 
+                    System.out.println("\nPlayer B Property :");
+                    disp.DisplayPropertyB(deal.GetPropertyCardB());
+                    System.out.println("Pick property to rent : ");
+                    allColour=input.nextInt();
+                    if (deal.RentAllColour(allColour-1)==MonoDeal.RENT_SUCCESS)
+                    {
+                      allowableAction++;
+                      System.out.println("Successfully paid rent");
+                      
+                       deal.DeleteCard(action-1);
+                    
+                      break;
+                    }
+                     
+                    else if (deal.RentAllColour(allColour-1)==MonoDeal.RENT_FIELD_EMPTY)
+                    {
+                      
+                      System.out.println("Field is empty card can not be rented.Choose Again");
+                      System.out.println("PLAYER B CARDS");
+                      disp.DisplayPlayerCardsB(deal.GetPlayerCardB());
+                      
+                    }
+                    else if (deal.RentAllColour(allColour-1)==MonoDeal.RENT_NOT_ENOUGH_BALANCE)
+                    {
+                      
+                      while (bankrupt!='B'||bankrupt!='X')
+                      {
+                        System.out.println("Player A (not enough balance):Go bankrupt(B)or choose property to sell(S)");
+                        bankrupt=input.next().toUpperCase().charAt(0);
+                        if (bankrupt == 'B')
+                        {
+                          System.out.println("PlayerA Bankrupt : Player B wins");
+                          bankrupt='B';
+                          
+                          break;
+                        }
+                         else if (deal.Bankrupt()==true)
+                        {
+                          System.out.print("There is no property to sell.Player B wins");
+                          bankrupt='B';
+                          break;
+                        }
+                        
+                        else if (bankrupt=='S')
+                        {
+                          while (true)
+                          {
+                            
+                            
+                            disp.DisplayPropertyA(deal.GetPropertyCardA());
+                            System.out.println("Choose Property to sell (choose your coordinate (x,y)) :");
+                            int col= input.nextInt();
+                            int row=input.nextInt();
+                            
+                        
+                            
+                            if (deal.SoldAllColourProperty((col-1),(row-1),(allColour-1))==true)
+                            {
+                              
+                              System.out.println("Successfully sold property");
+                              deal.DeleteCard(action-1);
+                               
+                              allowableAction++;
+                              
+                              break;
+                              
+                            }
+                            else if ( deal.SoldAllColourProperty((col-1),(row-1),(allColour-1))==false)
+                            {
+                              if (deal.Bankrupt()==true)
+                              {
+                                System.out.print("There is no property to sell.Player A wins");
+                                bankrupt='B';
+                                break;
+                              }
+                              else
+                              {
+                              System.out.println("not enough balance.Pick More property to sold");
+                              }
+                           
+                              
+                            }
+                            
+                            
+                          }
+                          
+                          
+                          bankrupt ='X';
+                          break;
+                          
+                          
+                          
+                        }
+                        
+                      }
+                      if (bankrupt=='B')
+                      {
+                        break;
+                      }
+                    
+                    
+                  }
+                  
+                }
+                else if (deal.Rent(action-1 )==MonoDeal.RENT_DOUBLE_RENT)
+                {
+                   System.out.println("\nPlayer B Property :");
+                    disp.DisplayPropertyB(deal.GetPropertyCardB());
+                    System.out.println("Pick property to rent : ");
+                    allColour=input.nextInt();
+                    if (deal.DoubleRent(allColour-1)==MonoDeal.RENT_SUCCESS)
+                    {
+                      allowableAction++;
+                      System.out.println("Successfully paid rent");
+                      deal.DeleteCard(action-1);
+                    
+                      break;
+                    }
+                     
+                    else if (deal.DoubleRent(allColour-1)==MonoDeal.RENT_FIELD_EMPTY)
+                    {
+                      
+                      System.out.println("Field is empty card can not be rented.Choose Again");
+                      System.out.println("PLAYER B CARDS");
+                      disp.DisplayPlayerCardsB(deal.GetPlayerCardB());
+                    
+                
+                      
+                    }
+                    else if (deal.DoubleRent(allColour-1)==MonoDeal.RENT_NOT_ENOUGH_BALANCE)
+                    {
+                      
+                      while (bankrupt!='B'||bankrupt!='X')
+                      {
+                        System.out.println("Player A (not enough balance):Go bankrupt(B)or choose property to sell(S)");
+                        bankrupt=input.next().toUpperCase().charAt(0);
+                        if (bankrupt == 'B')
+                        {
+                          System.out.println("PlayerA Bankrupt : Player B wins");
+                          bankrupt='B';
+                          
+                          break;
+                        }
+                        
+                        else if (bankrupt=='S')
+                        {
+                          while (true)
+                          {
+                            
+                            
+                            disp.DisplayPropertyA(deal.GetPropertyCardA());
+                            System.out.println("Choose Property to sell (choose your coordinate (x,y)) :");
+                            int col= input.nextInt();
+                            int row=input.nextInt();
+                            
+                            
+                            if (deal.DoubleRentProperty((col-1),(row-1),(allColour-1))==true)
+                            {
+                              System.out.println("Successfully sold property");
+                              deal.DeleteCard(action-1);
+                              allowableAction++;
+                              
+                              break;
+                              
+                            }
+                            else if ( deal.DoubleRentProperty((col-1),(row-1),(allColour-1))==false)
+                            {
+                              if(deal.Bankrupt()==true)
+                              {
+                              
+                                System.out.println("There is no property to sell.Player B wins");
+                                bankrupt='B';
+                                break;
+                              }
+                              else
+                              {
+                              
+                              
+                 
+                              System.out.println("not enough balance.Pick More property to sold");
+                              }
+                             
+                              
+                            }
+                            
+                            
+                            
+                            
+                          }
+                          
+                          
+                          bankrupt ='X';
+                          break;
+                          
+                          
+                          
+                        }
+                        
+                      }
+                      if (bankrupt=='B')
+                      {
+                        break;
+                      }
+                    
+                    
+                  }
+                   
+                   
+                 }
+                else if (deal.AddPropertyB(action-1)==true)
+                {
+                  deal.DeleteCard(action-1);
+                  allowableAction++;
+                }
+                else if (deal.AddPropertyB(action-1)==false)
+                {
+                  System.out.println("Wildcard has no base//(Special Card has not been specified).Choose Again");
+                  numberOfAction='Y';
+                }
+                
+                
+              }
+              
+              else if (numberOfAction=='N')
+              {
+                numberOfAction='N';
+              }
+              
+              else if (numberOfAction != 'N' || numberOfAction != 'Y')
+              {
+                System.out.println("Wrong input.Try Again!");
+                numberOfAction='Y';
+              }
+              
+              if (allowableAction ==3)
+              {
+                numberOfAction='N';
+              }
+              
+              
+            }
+            allowableAction=0;
+            numberOfAction='Y';
+            
+            if (bankrupt=='B')
+            {
+              break;
+            }
+            
+            
+            
+            
+            System.out.println("Player B Property :");
+            disp.DisplayPropertyB(deal.GetPropertyCardB());
+            System.out.println("\nSEE AN UPDATE ON BALANCE (Enter) to continue :");
+           
+            disp.DisplayMoney();
+            System.out.print(deal.PlayerBBank());
+            
+            try{
+              System.in.read();
+            }
+            catch(Exception e){
+            }
+            
+            deal.SwitchPlayer();
+            
+          }
+        }
+      }
+      
+      else
+      {
+        System.out.println("Invalid Player character.Try Again");
+      }
+    }
+    while (bankrupt!='B');
+    
+    
+  }
+}
